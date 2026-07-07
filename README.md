@@ -42,6 +42,25 @@ To showcase the ability to build reusable analytics for stakeholder reporting, t
 
 ---
 
+## 🛠️ Data Integrity & Formula Debugging (Excel Case Study)
+To demonstrate the report debugging and structural logic review required to support business stakeholders, the `Formula_Logic_Review` engine highlights a real-world debugging scenario resolved in the fleet dataset:
+
+* **Business Objective:** For *Specialised* vehicles that met the 48-hour booking SLA, determine if they also successfully met the 3.5-day VOR downtime SLA.
+* **The Bug Identified:** Specialised vehicles that actually breached the booking SLA (e.g., taking 52.5 hours to book) were being incorrectly flagged as "Effective" by the legacy system reporting rules.
+
+#### Legacy Faulty Logic:
+```excel
+=IF([@[Vehicle_Type]] <> "Specialised", "Not Applicable", 
+    IF(AND([@[Hours_To_Book]] <=48, [@[Total_Vor_Days]] >3.5), "Ineffective", "Effective")
+)
+```
+* **Root Cause Analysis:** The final `ELSE` statement acted as an unintentional catch-all. If a vehicle failed the first condition (`Hours_To_Book <= 48`), the nested `AND` statement fell straight into the final "Effective" output, ignoring the booking breach entirely.
+
+#### Applied Operational Correction:
+The logic was rewritten to explicitly isolate and filter out booking-SLA breaches as `"Not Assessed"` before executing the VOR performance calculation. This eliminated boundary-record errors and protected operational reporting accuracy.
+* **Validation Strategy:** Implemented full exception testing and filtered outcome boundary data to ensure 100% data integrity before pushing back to stakeholders.
+
+
 ## 📈 Future Tech Integration Roadmap
 In alignment with modern enterprise data stack strategies, the next phase of this project focuses on expanding this relational foundation into cloud-based analytics:
 * Transitioning static datasets into **Power BI Desktop** using both Import Mode and **DirectQuery** to simulate real-time asset tracking.
